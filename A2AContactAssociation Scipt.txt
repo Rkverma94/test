@@ -1,0 +1,22 @@
+List<A2A_Association__c> a2aAssociationList = [Select RecordType.Name, Id, Supplier__c, Supplier__r.Name, (Select Id, Contact__c FROM A2A_Contact_Associations__r) FROM A2A_Association__c WHERE RecordType.Name = 'Supplier Provider Association' AND Supplier__r.Name = 'OurPharma (Parent)'];
+
+List<Contact> adminContactList = [SELECT Id FROM Contact WHERE Admin__c = true AND AccountId = '0018D00000AB57vQAD'];
+List<A2A_Contact_Association__c> acaToInsertList = new List<A2A_Contact_Association__c>();
+List<Id> acaContactIds = new List<Id>();
+for(A2A_Association__c a2a : a2aAssociationList) {
+	Set<Id> contactAssociations = new Set<Id>();
+	for(A2A_Contact_Association__c aca : a2a.A2A_Contact_Associations__r) {
+		contactAssociations.add(aca.Contact__c);
+	}
+	for(Contact con : adminContactList) {
+		if(!contactAssociations.contains(con.Id)) {
+			//insert a2a contact associations
+			A2A_Contact_Association__c aca = new A2A_Contact_Association__c();
+			aca.A2A_Association__c = a2a.Id;
+			aca.Contact__c = con.Id;
+			acaToInsertList.add(aca);
+		}
+	}	
+}
+
+//insert acaToInsertList;
